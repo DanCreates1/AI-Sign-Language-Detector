@@ -19,11 +19,12 @@ labels_list = []
 current_letter = None
 run_detection = False
 
+#print instructions
 print("Press A–Z to collect samples for that letter.")
 print("Press Q to stop and train the model.")
 print("Press R to skip training and start detection immediately.")
 
-
+# Function to extract normalized landmarks
 def extract_landmarks(results):
     if not results.multi_hand_landmarks:
         return None
@@ -45,7 +46,7 @@ while True:
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(rgb)
 
-    
+    # Draw hand landmarks
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
@@ -83,7 +84,7 @@ while True:
 cap.release()
 cv2.destroyAllWindows()
 
-
+# Train model if not skipping training
 if not run_detection:
     X = np.array(data)
     y = np.array([letters.index(l) for l in labels_list])
@@ -91,7 +92,7 @@ if not run_detection:
 
     from sklearn.model_selection import train_test_split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
+    # Build model layers 
     model = tf.keras.Sequential([
         tf.keras.layers.Input(shape=(42,)),
         tf.keras.layers.Dense(128, activation='relu'),
@@ -114,7 +115,7 @@ while True:
     ret, frame = cap.read()
     if not ret:
         break
-
+        # Flip the frame for mirror effect
     frame = cv2.flip(frame, 1)
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(rgb)
@@ -129,7 +130,7 @@ while True:
 
     if results.multi_hand_landmarks:
         mp_draw.draw_landmarks(frame, results.multi_hand_landmarks[0], mp_hands.HAND_CONNECTIONS)
-
+    # Show prediction
     cv2.putText(frame, f"Prediction: {prediction}", (10, 40),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     cv2.putText(frame, "Press Q to quit", (10, 80),
